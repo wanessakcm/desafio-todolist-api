@@ -43,7 +43,7 @@ func (r *TaskRepository) FindAll(status, priority string) ([]models.Task, error)
 		return nil, err
 	}
 
-	var tasks []models.Task
+	var tasks = []models.Task{}
 
 	err = cursor.All(context.Background(), &tasks)
 	return tasks, err
