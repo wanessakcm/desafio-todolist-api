@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	_ "desafio-todolist-api/models"
 	"desafio-todolist-api/services"
 
 	"github.com/gorilla/mux"
@@ -19,6 +20,14 @@ func NewTaskHandler(service *services.TaskService) *TaskHandler {
 	return &TaskHandler{service: service}
 }
 
+// @Summary Criar tarefa
+// @Description Cria uma nova tarefa
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param task body services.CreateTaskInput true "Dados da tarefa"
+// @Success 201 {object} models.Task
+// @Router /tasks [post]
 // POST /tasks
 func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	var input services.CreateTaskInput
@@ -37,20 +46,12 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, task)
 }
 
-// GET (filtro flexível)/tasks?status=pending&priority=high
-func (h *TaskHandler) ListTasks(w http.ResponseWriter, r *http.Request) {
-	status := r.URL.Query().Get("status")
-	priority := r.URL.Query().Get("priority")
-
-	tasks, err := h.service.List(status, priority)
-	if err != nil {
-		writeServiceError(w, err)
-		return
-	}
-
-	writeJSON(w, http.StatusOK, tasks)
-}
-
+// @Summary Buscar tarefa por ID
+// @Tags tasks
+// @Produce json
+// @Param id path string true "ID da tarefa"
+// @Success 200 {object} models.Task
+// @Router /tasks/{id} [get]
 // GET /tasks/{id}
 func (h *TaskHandler) GetTaskByID(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
@@ -68,6 +69,33 @@ func (h *TaskHandler) GetTaskByID(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, task)
 }
 
+// @Summary Listar tarefas
+// @Tags tasks
+// @Produce json
+// @Success 200 {array} models.Task
+// @Router /tasks [get]
+// GET (filtro flexível)/tasks?status=pending&priority=high
+func (h *TaskHandler) ListTasks(w http.ResponseWriter, r *http.Request) {
+	status := r.URL.Query().Get("status")
+	priority := r.URL.Query().Get("priority")
+
+	tasks, err := h.service.List(status, priority)
+	if err != nil {
+		writeServiceError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, tasks)
+}
+
+// @Summary Atualizar tarefa
+// @Tags tasks
+// @Accept json
+// @Produce json
+// @Param id path string true "ID da tarefa"
+// @Param task body services.UpdateTaskInput true "Dados da tarefa"
+// @Success 200 {object} map[string]string
+// @Router /tasks/{id} [put]
 // PUT /tasks/{id}
 func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
@@ -91,6 +119,11 @@ func (h *TaskHandler) UpdateTask(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]string{"message": "tarefa atualizada com sucesso"})
 }
 
+// @Summary Deletar tarefa
+// @Tags tasks
+// @Param id path string true "ID da tarefa"
+// @Success 204
+// @Router /tasks/{id} [delete]
 // DELETE /tasks/{id}
 func (h *TaskHandler) DeleteTask(w http.ResponseWriter, r *http.Request) {
 	id := mux.Vars(r)["id"]
@@ -132,4 +165,8 @@ func writeServiceError(w http.ResponseWriter, err error) {
 	default:
 		writeError(w, http.StatusInternalServerError, "erro interno")
 	}
+}
+
+type ErrorResponse struct {
+	Error string `json:"error"`
 }

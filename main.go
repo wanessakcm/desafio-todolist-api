@@ -1,3 +1,8 @@
+// @title Desafio To Do List API
+// @version 1.0
+// @description API RESTful de gerenciamento de tarefas desenvolvida em Go
+// @host localhost:8080
+// @BasePath /
 package main
 
 import (
@@ -9,7 +14,10 @@ import (
 	"desafio-todolist-api/repository"
 	"desafio-todolist-api/services"
 
+	_ "desafio-todolist-api/docs"
+
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 )
 
 func main() {
@@ -26,6 +34,9 @@ func main() {
 
 	// Router
 	r := mux.NewRouter()
+
+	// Swagger
+	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	// Rota de teste
 	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
